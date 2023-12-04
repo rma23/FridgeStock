@@ -44,7 +44,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
-import androidx.compose.ui.graphics.Color.Companion.LightGray
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
@@ -131,8 +130,8 @@ fun FoodEditBody(
             .fillMaxWidth()
             .padding(16.dp),
     ) {
-        var isShowDatePicker = remember { mutableStateOf(false) }
-        var dateType = remember { mutableStateOf("") }
+        val isShowDatePicker = remember { mutableStateOf(false) }
+        val dateType = remember { mutableStateOf("") }
 
         val name = remember(key1 = viewModel.editedFood.name) { mutableStateOf(viewModel.editedFood.name) }
         val amount = remember(key1 = viewModel.editedFood.amount) { mutableStateOf(viewModel.editedFood.amount) }
@@ -343,7 +342,7 @@ fun FoodEditBody(
                             addedDate,
                             context
                         )
-                        navController.navigate(ScreenRoute.HomeScreen.route)
+                        navController.popBackStack()
                     },
                 ) {
                     Text(text = stringResource(id = R.string.update))

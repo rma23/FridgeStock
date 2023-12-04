@@ -1,4 +1,6 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
+    ExperimentalMaterial3Api::class
+)
 
 package com.example.fridgestock.ui
 
@@ -45,7 +47,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
-import androidx.compose.ui.graphics.Color.Companion.LightGray
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
@@ -57,7 +58,6 @@ import androidx.navigation.NavController
 import com.example.fridgestock.R
 import com.example.fridgestock.components.DatePickerComponent
 import com.example.fridgestock.components.convertMillisToDate
-import com.example.fridgestock.navigation.ScreenRoute
 import com.example.fridgestock.ui.theme.LightFridgeColors
 import java.time.Instant
 
@@ -118,8 +118,8 @@ fun FoodEntryBody(
             .padding(16.dp),
     ) {
 
-        var isShowDatePicker = remember { mutableStateOf(false) }
-        var dateType = remember { mutableStateOf("") }
+        val isShowDatePicker = remember { mutableStateOf(false) }
+        val dateType = remember { mutableStateOf("") }
 
         val context = LocalContext.current
 
@@ -275,7 +275,7 @@ fun FoodEntryBody(
             ) {
                 Button(
                     onClick = {
-                        navController.navigate(ScreenRoute.HomeScreen.route)
+                        navController.popBackStack()
                     },
                 ) {
                     Text(text = "Cancel")
@@ -294,7 +294,7 @@ fun FoodEntryBody(
                         }
                         viewModel.addedDate = convertMillisToDate(Instant.now().toEpochMilli())
                         viewModel.addFood(context)
-                        navController.navigate(ScreenRoute.HomeScreen.route)
+                        navController.popBackStack()
                     },
                 ) {
                     Text(text = "OK")

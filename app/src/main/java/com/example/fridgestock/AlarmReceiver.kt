@@ -1,6 +1,7 @@
 package com.example.fridgestock
 
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -19,10 +20,17 @@ class AlarmReceiver : BroadcastReceiver() {
             "channel_id",
             NotificationManagerCompat.IMPORTANCE_DEFAULT,
         )
-            .setName("Notification from Fridge3")
+            .setName("Notification from FridgeStock")
             .build()
 
         manager.createNotificationChannel(channel)
+
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            context.hashCode(),
+            intent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
 
         context.let { ctx ->
             val notificationManager =
@@ -30,7 +38,8 @@ class AlarmReceiver : BroadcastReceiver() {
             val builder = NotificationCompat.Builder(ctx, channel.id)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentTitle("FridgeStockからのお知らせ")
-                .setContentText("$message")
+                .setContentText(message)
+                .setContentIntent(pendingIntent)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .build()
             notificationManager.notify(1, builder)

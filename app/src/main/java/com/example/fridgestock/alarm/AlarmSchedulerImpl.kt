@@ -9,10 +9,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import com.example.fridgestock.AlarmReceiver
 import com.example.fridgestock.components.convertMillisToDateTime
-import java.time.LocalDateTime
-import java.time.LocalTime
 import java.time.ZoneId
-import java.time.ZoneOffset
 
 class AlarmSchedulerImpl(
     private val context: Context
@@ -27,11 +24,10 @@ class AlarmSchedulerImpl(
         }
         val alarmTime = alarmItem.alarmTime.atZone(ZoneId.of("Asia/Tokyo")).toInstant().toEpochMilli()
 
-        val alarmTimeTest =
-            LocalDateTime.of(2023, 11, 30, 0, 45)
+//        val alarmTimeTest =
+//            LocalDateTime.of(2023, 11, 30, 0, 45)
 
-
-        alarmManager.setExactAndAllowWhileIdle(
+        alarmManager.setAndAllowWhileIdle(
             AlarmManager.RTC,
             alarmTime,
             PendingIntent.getBroadcast(
@@ -41,8 +37,6 @@ class AlarmSchedulerImpl(
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
         )
-
-
 
         //val alarmTime2 = convertMillisToDate(alarmTime)
         val alarmTime2 = convertMillisToDateTime(alarmTime)
