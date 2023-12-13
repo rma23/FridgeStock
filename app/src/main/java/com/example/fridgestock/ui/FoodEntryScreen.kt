@@ -278,7 +278,7 @@ fun FoodEntryBody(
                         navController.popBackStack()
                     },
                 ) {
-                    Text(text = "Cancel")
+                    Text(text = stringResource(id = R.string.cancel))
                 }
                 Spacer(modifier = Modifier.width(10.dp))
                 Button(
@@ -297,7 +297,7 @@ fun FoodEntryBody(
                         navController.popBackStack()
                     },
                 ) {
-                    Text(text = "OK")
+                    Text(text = stringResource(id = R.string.ok))
                 }
             }
         }

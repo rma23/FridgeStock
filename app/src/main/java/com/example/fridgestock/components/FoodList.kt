@@ -16,8 +16,13 @@ fun FoodList(
     viewModel: MainViewModel,
     onClickRow: (Food) -> Unit,
 ) {
+    var sortedFoods = viewModel.sortFoods(foods)
+
     LazyVerticalGrid(columns = GridCells.Fixed(2)) {
-        items(foods) { food ->
+        items(
+            items = sortedFoods,
+            key = { it.id }
+        ) { food ->
             val isSelected = viewModel.selectedFoods.contains(food)
             FoodRow(
                 food = food,

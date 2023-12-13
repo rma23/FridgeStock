@@ -10,21 +10,30 @@ import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -35,10 +44,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -59,7 +74,7 @@ fun HomeScreen(
     BackHandler(
         enabled = viewModel.isInSelectionMode,
     ) {
-        viewModel.resetSelectionMode()
+        viewModel.resetSelectionMode
     }
 
     LaunchedEffect(
@@ -71,10 +86,16 @@ fun HomeScreen(
         }
     }
 
-    if (viewModel.isShowDialog) {
+    if (viewModel.isShowDeleteDialog) {
         DeleteSelectedFoodsDialog(
             viewModel = viewModel,
             context = LocalContext.current
+        )
+    }
+
+    if (viewModel.isShowSortDialog) {
+        SortFoodsDialog(
+            viewModel = viewModel
         )
     }
 
@@ -86,7 +107,7 @@ fun HomeScreen(
                     viewModel = viewModel
                 )
             } else {
-                HomeScreenTopBar()
+                HomeScreenTopBar(viewModel)
             }
         },
         floatingActionButton = {
@@ -114,13 +135,36 @@ fun HomeScreen(
 }
 
 @Composable
-fun HomeScreenTopBar() {
+fun HomeScreenTopBar(
+    viewModel: MainViewModel
+) {
+    var showMenu by remember { mutableStateOf(false) }
+
     TopAppBar(
         title = { Text(stringResource(id = R.string.app_name)) },
+        actions = {
+            IconButton(onClick = { showMenu = !showMenu }) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = "Menu"
+                )
+            }
+            DropdownMenu(
+                expanded = showMenu,
+                onDismissRequest = { showMenu = false }
+            ) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(id = R.string.sort)) },
+                    onClick = {
+                    showMenu = false
+                    viewModel.isShowSortDialog = true
+                })
+            }
+        },
         colors = TopAppBarDefaults.topAppBarColors(
             titleContentColor = Black,
             containerColor = LightFridgeColors.pale,
-        )
+        ),
     )
 }
 
@@ -149,7 +193,7 @@ fun SelectionModeTopAppBar(
                 modifier = Modifier,
             ) {
                 IconButton(onClick = {
-                    viewModel.isShowDialog = true
+                    viewModel.isShowDeleteDialog = true
                 }) {
                     Icon(
                         imageVector = Icons.Default.Delete,
@@ -173,7 +217,7 @@ fun DeleteSelectedFoodsDialog(
     context: Context
 ) {
     AlertDialog(
-        onDismissRequest = { viewModel.isShowDialog = false },
+        onDismissRequest = { viewModel.isShowDeleteDialog = false },
         title = { Text(stringResource(R.string.confirm_delete_selected_foods)) },
         confirmButton = {
             Row(
@@ -184,7 +228,7 @@ fun DeleteSelectedFoodsDialog(
                 Button(
                     modifier = Modifier.width(120.dp),
                     onClick = {
-                        viewModel.isShowDialog = false
+                        viewModel.isShowDeleteDialog = false
                     },
                 ) {
                     Text(text = "Cancel")
@@ -197,10 +241,76 @@ fun DeleteSelectedFoodsDialog(
                             viewModel.deleteFood(it, context)
                         }
                         viewModel.resetSelectionMode()
-                        viewModel.isShowDialog = false
+                        viewModel.isShowDeleteDialog = false
                     },
                 ) {
-                    Text(text = "OK")
+                    Text(text = stringResource(id = R.string.ok))
+                }
+            }
+        },
+    )
+}
+
+@Composable
+fun SortFoodsDialog(
+    viewModel: MainViewModel,
+) {
+    val initialOrder = viewModel.initialSelectedOrder
+
+    AlertDialog(
+        onDismissRequest = { viewModel.isShowSortDialog = false },
+        title = { Text(stringResource(R.string.sort)) },
+        confirmButton = {
+            Column(modifier = Modifier.selectableGroup()) {
+                viewModel.radioOptions.forEach { label ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .selectable(
+                                selected = (viewModel.selectedOrder == label),
+                                onClick = { viewModel.selectedOrder = label },
+                                role = Role.RadioButton
+                            )
+                            .padding(horizontal = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            modifier = Modifier.padding(end = 16.dp),
+                            selected = (viewModel.selectedOrder == label),
+                            onClick = null
+                        )
+                        Text(
+                            text = label,
+                            fontSize = 16.sp,
+                            color = Color.DarkGray
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(20.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Button(
+                        modifier = Modifier.width(120.dp),
+                        onClick = {
+                            viewModel.selectedOrder = initialOrder
+                            viewModel.isShowSortDialog = false
+                        },
+                    ) {
+                        Text(text = stringResource(id = R.string.cancel))
+                    }
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Button(
+                        modifier = Modifier.width(120.dp),
+                        onClick = {
+                            viewModel.initialSelectedOrder = viewModel.selectedOrder
+                            viewModel.isShowSortDialog = false
+                        },
+                    ) {
+                        Text(text = stringResource(id = R.string.ok))
+                    }
                 }
             }
         },
